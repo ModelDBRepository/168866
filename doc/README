@@ -1,0 +1,111 @@
+This is NEST version 2.2.2, patched with the neuron models we need for the SC
+model. The patch itself is "SC_model.patch" in the "patches" directory, and you
+can get the unpatched version from:
+http://www.nest-initiative.org/download/gplreleases/nest-2.2.2.tar.gz
+
+
+The model as published in [1] used a much earlier version of NEST (a developer
+version of 1.9), a different version of Python and an earlier version of the
+model file and supporting libraries. It was also written to run on a specific
+cluster system.
+
+This version should give results that are very close if not identical to those
+in the paper. Differences can arise from the above reasons, but also from the
+number of processes and the manner (OpenMPI or OpenMP) used to run them. All
+these factors have subtle effects on things such as random number generation,
+so spike trains will differ somewhet. The overall model behaviour should be
+the same, however.
+
+Also, as the model has been ported from earlier, incompatible software
+versions, it is quite possible errors have crept in. Cursory examination seems
+to indicate results are very close, but it is still possible there are
+undiscovered issues in the code waiting to trap the unwary. 
+
+
+[1] Morén J, Shibata T, Doya K (2013) The Mechanism of Saccade Motor Pattern
+Generation Investigated by a Large-Scale Spiking Neuron Model of the Superior
+Colliculus. PLoS ONE 8(2): e57134. doi:10.1371/journal.pone.0057134 
+
+
+
+Installation
+============
+
+We require GSL (Gnu Scientific Library) for the neuron models. It is also a
+good idea to have OpenMP and/or OpenMPI installed to speed up the simulations.
+
+An easy way to build and install without changing anything system-wide: 
+
+* edit "init.sh" in this directory if needed. 
+
+  init.sh assumes you will want to install and run from your local ~/bin
+  directory, and that your version of Python is 2.7. This release of NEST needs
+  a python version between 2.6 and 2.7.
+
+
+* Source the init.sh file:
+
+  source init.sh
+
+
+* go to nest-2.2.2/build, then configure and make:
+
+  cd nest-2.2.2/build
+  ../configure --prefix="$NEST_INSTDIR" --with-mpi --with-python --with-openmp=yes
+  make -j
+  make install
+
+
+The model itself is in supcol and consists of the main model file SCmodel.py
+along with a small library SGI2class.py. You can run the model simply with, for
+example:
+
+  python ./SCmodel.py --stime=500 --retx=9.0 --rety=-5.0 testsim
+
+
+This will run the model for 500ms, with a stimulus appearing at 9 degrees
+horizontal, -5 degrees vertical from the focus point. The results will be
+saved in a directory SCmodel/. 
+
+The model will run in one process only (so it takes quite a while to run). To
+parallelize, you can use either or both of OpenMPI or OpenMP:
+
+  mpirun -np 2 python ./SCmodel.py --stime=500 --retx=9.0 --rety=-5.0 --omp 8 --loadpar testsim
+
+This would run two OpenMPI processes, each one using eight OpenMP thread, for a
+total of 16 processes. For parallel simulation, SCmodel needs a parameter file
+SCmodel.par. If it does not exist you can regenerate it:
+
+  python ./SCmodel.py --savepar
+
+
+There are other options available with the model; run python ./SCmodel.py
+--help to see them.
+
+
+Accessory applications.
+=======================
+
+To collate the results you can use the "assemble.py" utility:
+
+  cd SCmodel
+  ../assemble.py testsim
+
+This will assemble the data files into one file per surface with a file ending
+".spk", consisting of neuron ID-spike time pairs, sorted by spike time. This
+format is simple to read by external analysis tools.
+
+
+When you do long-running or numerous simulations the results files get rather
+large and cumbersome. For that purpose we also have a "compact.py" utility
+that converts the data to a space-efficient compressed format that takes up
+only 1/9 of the original data.
+
+  cd SCmodel
+  ../compact.py testsim
+
+It will assemble the data into one file per surface in a compact format,
+stored in a subdirectory. Add the "-d" flag is you want it to delete the
+uncompressed files when done.
+
+

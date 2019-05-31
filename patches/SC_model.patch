@@ -1,0 +1,1593 @@
+From 7f76792700deebbd50b41a6d7e318b0e9267e74f Mon Sep 17 00:00:00 2001
+From: Jan Moren <jan.moren@gmail.com>
+Date: Tue, 6 Aug 2013 14:58:06 +0900
+Subject: [PATCH 1/3] apply patch for SC related models
+
+---
+ models/Makefile.am        |  2 ++
+ models/modelsmodule.cpp   |  4 ++++
+ nestkernel/nest_names.cpp | 15 +++++++++++++++
+ nestkernel/nest_names.h   | 14 ++++++++++++++
+ 4 files changed, 35 insertions(+)
+
+diff --git a/models/Makefile.am b/models/Makefile.am
+index c79d6ab..2715c0a 100644
+--- a/models/Makefile.am
++++ b/models/Makefile.am
+@@ -31,6 +31,8 @@ libmodelsmodule_la_SOURCES= \
+ 		iaf_cond_exp_sfa_rr.h iaf_cond_exp_sfa_rr.cpp\
+ 		iaf_cond_alpha_mc.cpp iaf_cond_alpha_mc.h\
+ 		aeif_cond_alpha.h aeif_cond_alpha.cpp\
++		aeif_cond_nmda_alpha.h aeif_cond_nmda_alpha.cpp\
++		synth_integrator.h synth_integrator.cpp \
+ 		aeif_cond_exp.h aeif_cond_exp.cpp\
+ 		hh_psc_alpha.h hh_psc_alpha.cpp\
+ 		hh_cond_exp_traub.cpp hh_cond_exp_traub.h\
+diff --git a/models/modelsmodule.cpp b/models/modelsmodule.cpp
+index 9d5c1ae..9fd84c2 100644
+--- a/models/modelsmodule.cpp
++++ b/models/modelsmodule.cpp
+@@ -43,6 +43,8 @@
+ 
+ // Neuron models
+ #include "aeif_cond_alpha.h"
++#include "aeif_cond_nmda_alpha.h"
++#include "synth_integrator.h"
+ #include "aeif_cond_exp.h"
+ #include "hh_cond_exp_traub.h"
+ #include "hh_psc_alpha.h"
+@@ -194,6 +196,8 @@ namespace nest
+ 
+ #ifdef HAVE_GSL_1_11
+     register_model<aeif_cond_alpha>(net_, "aeif_cond_alpha");
++    register_model<aeif_cond_nmda_alpha>(net_, "aeif_cond_nmda_alpha");
++    register_model<synth_integrator>(net_, "synth_integrator");
+     register_model<aeif_cond_exp>(net_, "aeif_cond_exp");
+     register_model<ht_neuron>(net_,       "ht_neuron");
+ #endif
+diff --git a/nestkernel/nest_names.cpp b/nestkernel/nest_names.cpp
+index 58b6840..cf86a5a 100644
+--- a/nestkernel/nest_names.cpp
++++ b/nestkernel/nest_names.cpp
+@@ -337,5 +337,20 @@ namespace nest
+     const Name recorder("recorder");
+     const Name synapse("synapse");
+     const Name other("other");
++
++
++    // These are for the aeiaf model
++    const Name N_V_max("NMDA_V_max");   // Voltage for max NMDA effect (not really)
++    const Name N_V_min("NMDA_V_min");    // Voltage for minimum NMDA
++    const Name N_gain("NMDA_gain");     // Gain for NMDA sigmoid
++    const Name g_n("g_n");      // NMDA conductance
++    const Name dg_n("g_n");     // derivative NMDA conductance
++    const Name E_n("E_n");       // NMDA reversal potential 
++    const Name tau_syn_n("tau_syn_n"); // NMDA time constant
++
++    const Name Smax("Smax");    // Max for spike integrator
++    const Name Gamma("Gamma");  // Gamma factor
++    const Name Reset("Reset");  // Reset threshold
++
+   }
+ }
+diff --git a/nestkernel/nest_names.h b/nestkernel/nest_names.h
+index 377bc8d..cc00894 100644
+--- a/nestkernel/nest_names.h
++++ b/nestkernel/nest_names.h
+@@ -359,6 +359,20 @@ namespace nest
+     extern const Name recorder;
+     extern const Name synapse;
+     extern const Name other;
++
++    // For aeif_cond_nmda_alpha and synnth_integrator
++    extern const Name N_V_max;   
++    extern const Name N_V_min;  
++    extern const Name N_gain;  
++    extern const Name g_n;       // NMDA conductance
++    extern const Name dg_n;      // derivative NMDA conductance
++    extern const Name E_n;       // NMDA reversal potential 
++    extern const Name tau_syn_n; // NMDA time constant
++
++    extern const Name Smax;   // max for integrator
++    extern const Name Gamma;   // gamma factor
++    extern const Name Reset;   // reset threshold
++
+   }
+ }
+ 
+-- 
+1.8.1.2
+
+
+From 4069b888f50cf5c91943ba0c6f7f897a0ea53fc9 Mon Sep 17 00:00:00 2001
+From: Jan Moren <jan.moren@gmail.com>
+Date: Tue, 6 Aug 2013 14:59:58 +0900
+Subject: [PATCH 2/3] add aeif_nmda model
+
+---
+ models/aeif_cond_nmda_alpha.cpp | 521 ++++++++++++++++++++++++++++++++++++++++
+ models/aeif_cond_nmda_alpha.h   | 412 +++++++++++++++++++++++++++++++
+ 2 files changed, 933 insertions(+)
+ create mode 100644 models/aeif_cond_nmda_alpha.cpp
+ create mode 100644 models/aeif_cond_nmda_alpha.h
+
+diff --git a/models/aeif_cond_nmda_alpha.cpp b/models/aeif_cond_nmda_alpha.cpp
+new file mode 100644
+index 0000000..746446a
+--- /dev/null
++++ b/models/aeif_cond_nmda_alpha.cpp
+@@ -0,0 +1,521 @@
++/*
++ *  aeif_cond_nmda_alpha.cpp
++ *
++ * Adaptive exponential integrate-and-fire model (Brette and Gerstner) with
++ * alpha-shaped synaptic conductances, as implemented in aeif_cond_alpha.cpp 
++ * from the nest simulator (v. 1.9.8498).
++ *
++ * This version adds an NMDA synapse-like input with positive
++ * voltage-dependence on the conductance.
++ *
++ * Jan Moren, 2009
++ *
++ * 2011 - Update for nest2
++ *
++ * Original model:
++*
++ *  This file is part of NEST
++ *
++ *  Copyright (C) 2005 by
++ *  The NEST Initiative
++ *
++ *  See the file AUTHORS for details.
++ *
++ *  Permission is granted to compile and modify
++ *  this file for non-commercial use.
++ *  See the file LICENSE for details.
++ *
++ */
++
++
++#include "aeif_cond_nmda_alpha.h"
++//#include "scmodules_names.h"
++#include "nest_names.h"
++
++#ifdef HAVE_GSL_1_11
++
++#include "universal_data_logger_impl.h"
++#include "exceptions.h"
++#include "network.h"
++#include "dict.h"
++#include "integerdatum.h"
++#include "doubledatum.h"
++#include "dictutils.h"
++#include "numerics.h"
++#include <limits>
++
++#include <cmath>
++#include <iomanip>
++#include <iostream>
++#include <cstdio>
++
++/* ---------------------------------------------------------------- 
++ * Recordables map
++ * ---------------------------------------------------------------- */
++
++nest::RecordablesMap<nest::aeif_cond_nmda_alpha> nest::aeif_cond_nmda_alpha::recordablesMap_;
++
++using namespace nest;
++
++namespace nest {
++/*
++   * Override the create() method with one call to RecordablesMap::insert_() 
++   * for each quantity to be recorded.
++   */
++    template <>
++    void RecordablesMap<aeif_cond_nmda_alpha>::create()
++    {
++	// use standard names whereever you can for consistency!
++	insert_(names::V_m, &aeif_cond_nmda_alpha::get_y_elem_<aeif_cond_nmda_alpha::V_M>);
++	insert_(names::g_ex, &aeif_cond_nmda_alpha::get_y_elem_<aeif_cond_nmda_alpha::G_EX>);
++	insert_(names::g_in, &aeif_cond_nmda_alpha::get_y_elem_<aeif_cond_nmda_alpha::G_IN>);
++	insert_(names::g_n, &aeif_cond_nmda_alpha::get_y_elem_<aeif_cond_nmda_alpha::G_N>);
++	insert_(names::w, &aeif_cond_nmda_alpha::get_y_elem_<aeif_cond_nmda_alpha::W>);
++	//insert_("weighted_spikes_ex", &nest::synth_integrator::get_weighted_spikes_ex_);
++	//insert_("weighted_spikes_in", &nest::synth_integrator::get_weighted_spikes_in_);
++    }
++}
++
++ extern "C"
++ int aeif_cond_nmda_alpha_dynamics (double, const double y[], double f[], void* param)
++ {
++   // shorthand for class we work for
++   typedef nest::aeif_cond_nmda_alpha AEIF;
++   
++   // get parameters as reference  
++   AEIF::Parameters_* tmp =
++     reinterpret_cast<AEIF::Parameters_*>(param);
++   assert(tmp);
++   AEIF::Parameters_& p = *tmp;
++
++   // shorthand for state variables
++   const nest::double_t& V     = y[AEIF::V_M  ];
++   const nest::double_t& dg_ex = y[AEIF::DG_EX];
++   const nest::double_t&  g_ex = y[AEIF::G_EX ];
++   const nest::double_t& dg_in = y[AEIF::DG_IN];
++   const nest::double_t&  g_in = y[AEIF::G_IN ];
++   const nest::double_t& w     = y[AEIF::W    ];
++   const nest::double_t& dg_n = y[AEIF::DG_N];
++   const nest::double_t&  g_n = y[AEIF::G_N ];
++
++   const nest::double_t I_syn_exc = g_ex * (V - p.E_ex);
++   const nest::double_t I_syn_inh = g_in * (V - p.E_in);
++   const nest::double_t I_syn_n   = g_n * (V - p.E_n);
++   const nest::double_t I_spike = p.Delta_T * std::exp((V - p.V_th) / p.Delta_T);
++
++   // dv/dt
++   f[AEIF::V_M  ] = ( -p.g_L *( (V-p.E_L) - I_spike) 
++ 	                   - I_syn_exc - I_syn_inh - I_syn_n - w + p.I_e + p.I_stim) / p.C_m;
++
++   f[AEIF::DG_EX] = -dg_ex / p.tau_syn_ex;
++   f[AEIF::G_EX ] =  dg_ex - g_ex / p.tau_syn_ex; // Synaptic Conductance (nS)
++
++   f[AEIF::DG_IN] = -dg_in / p.tau_syn_in;
++   f[AEIF::G_IN ] =  dg_in - g_in / p.tau_syn_in; // Synaptic Conductance (nS)
++
++   f[AEIF::DG_N] = -dg_n / p.tau_syn_n;
++   f[AEIF::G_N ] =  dg_n - g_n / p.tau_syn_n; // Synaptic Conductance (nS)
++
++   // Adaptation current w.
++   f[AEIF::W    ] = ( p.a * (V - p.E_L) - w ) / p.tau_w;
++
++   return GSL_SUCCESS;
++ }
++
++/* ---------------------------------------------------------------- 
++ * Default constructors defining default parameters and state
++ * ---------------------------------------------------------------- */
++    
++nest::aeif_cond_nmda_alpha::Parameters_::Parameters_()
++  : V_peak_    (  0.0    ),  // mV
++    V_reset_   (-60.0    ),  // mV
++    t_ref_     (  0.0    ),  // ms
++    g_L        ( 30.0    ),  // nS
++    C_m        (281.0    ),  // pF
++    E_ex       (  0.0    ),  // mV
++    E_in       (-85.0    ),  // mV
++    E_L        (-70.6    ),  // mV
++    Delta_T    (  2.0    ),  // mV
++    tau_w      (144.0    ),  // ms
++    a          (  4.0    ),  // nS
++    b          ( 80.5    ),  // pA
++    V_th       (-50.4    ),  // mV
++    tau_syn_ex (  0.2    ),  // ms
++    tau_syn_in (  2.0    ),  // ms
++    I_e        (  0.0    ),  // pA
++    
++    N_V_min     (-70.0    ),  // mv
++    N_V_max     (-50.0    ),  // mV
++    N_gain      (  3.0    ),   // -
++    tau_syn_n   (  3.0    ),  // ms
++    E_n         (  0.0    )  // mV
++{}
++
++nest::aeif_cond_nmda_alpha::State_::State_(const Parameters_& p)
++  : r_(0)
++{
++  y_[0] = p.E_L;
++  for ( size_t i = 1 ; i < aeif_cond_nmda_alpha::NSTATES ; ++i )
++    y_[i] = 0;
++}
++
++nest::aeif_cond_nmda_alpha::State_::State_(const State_& s)
++  : r_(s.r_)
++{
++  for ( size_t i = 0 ; i < aeif_cond_nmda_alpha::NSTATES ; ++i )
++    y_[i] = s.y_[i];
++}
++
++nest::aeif_cond_nmda_alpha::State_& nest::aeif_cond_nmda_alpha::State_::operator=(const State_& s)
++{
++  assert(this != &s);  // would be bad logical error in program
++  
++  for ( size_t i = 0 ; i < aeif_cond_nmda_alpha::NSTATES ; ++i )
++    y_[i] = s.y_[i];
++  r_ = s.r_;
++  return *this;
++}
++
++/* ---------------------------------------------------------------- 
++ * Paramater and state extractions and manipulation functions
++ * ---------------------------------------------------------------- */
++
++void nest::aeif_cond_nmda_alpha::Parameters_::get(DictionaryDatum &d) const
++{
++  def<double>(d,names::C_m,    C_m);
++  def<double>(d,names::V_th,   V_th);
++  def<double>(d,names::t_ref,  t_ref_);
++  def<double>(d,names::g_L,    g_L);
++  def<double>(d,names::E_L,    E_L); 
++  def<double>(d,names::V_reset,V_reset_);
++  def<double>(d,names::E_ex,   E_ex);
++  def<double>(d,names::E_in,   E_in);
++  def<double>(d,names::tau_syn_ex, tau_syn_ex);
++  def<double>(d,names::tau_syn_in, tau_syn_in);
++  def<double>(d,names::a,      a);
++  def<double>(d,names::b,      b);
++  def<double>(d,names::Delta_T,Delta_T);
++  def<double>(d,names::tau_w,  tau_w);
++  def<double>(d,names::I_e,    I_e);
++  def<double>(d,names::V_peak, V_peak_);
++
++  def<double>(d, names::N_V_min, N_V_min);
++  def<double>(d, names::N_V_max, N_V_max);
++  def<double>(d, names::N_gain, N_gain);
++  def<double>(d, names::E_n,   E_n);
++  def<double>(d, names::tau_syn_n, tau_syn_n);
++}
++
++void nest::aeif_cond_nmda_alpha::Parameters_::set(const DictionaryDatum& d)
++{
++  updateValue<double>(d,names::V_th,    V_th);
++  updateValue<double>(d,names::V_peak,  V_peak_);
++  updateValue<double>(d,names::t_ref,   t_ref_);
++  updateValue<double>(d,names::E_L,     E_L);
++  updateValue<double>(d,names::V_reset, V_reset_);
++  updateValue<double>(d,names::E_ex,    E_ex);
++  updateValue<double>(d,names::E_in,    E_in);
++    
++  updateValue<double>(d,names::C_m,     C_m);
++  updateValue<double>(d,names::g_L,     g_L);
++    
++  updateValue<double>(d,names::tau_syn_ex, tau_syn_ex);
++  updateValue<double>(d,names::tau_syn_in, tau_syn_in);
++    
++  updateValue<double>(d,names::a,      a);
++  updateValue<double>(d,names::b,      b);
++  updateValue<double>(d,names::Delta_T,Delta_T);
++  updateValue<double>(d,names::tau_w,  tau_w);
++
++  updateValue<double>(d,names::I_e,    I_e);
++
++  updateValue<double>(d, names::N_V_min, N_V_min);
++  updateValue<double>(d, names::N_V_max, N_V_max);
++  updateValue<double>(d, names::N_gain, N_gain);
++  updateValue<double>(d, names::E_n,    E_n);
++  updateValue<double>(d, names::tau_syn_n, tau_syn_n);
++
++  if ( V_reset_ >= V_th )
++    throw BadProperty("Reset potential must be smaller than threshold.");
++    
++  if ( V_peak_ <= V_th )
++    throw BadProperty("V_peak must be larger than threshold.");
++
++  if ( C_m <= 0 )
++  {
++    throw BadProperty("Capacitance must be strictly positive.");
++  }
++    
++  if ( t_ref_ < 0 )
++    throw BadProperty("Refractory time cannot be negative.");
++      
++  if ( tau_syn_ex <= 0 || tau_syn_in <= 0 || tau_syn_n <=0 || tau_w <= 0 )
++    throw BadProperty("All time constants must be strictly positive.");
++}
++
++void nest::aeif_cond_nmda_alpha::State_::get(DictionaryDatum &d) const
++{
++  def<double>(d,names::V_m,    y_[V_M]);
++  def<double>(d,names::g_ex,   y_[G_EX]);
++  def<double>(d,names::dg_ex,  y_[DG_EX]);
++  def<double>(d,names::g_in,   y_[G_IN]);
++  def<double>(d,names::dg_in,  y_[DG_IN]);
++  def<double>(d,names::w,      y_[W]);
++  def<double>(d,names::g_n,   y_[G_N]);
++  def<double>(d,names::dg_n,  y_[DG_N]);
++}
++
++void nest::aeif_cond_nmda_alpha::State_::set(const DictionaryDatum& d, const Parameters_&)
++{
++  updateValue<double>(d,names::V_m,   y_[V_M]);
++  updateValue<double>(d,names::g_ex,  y_[G_EX]);
++  updateValue<double>(d,names::dg_ex, y_[DG_EX]);
++  updateValue<double>(d,names::g_in,  y_[G_IN]);
++  updateValue<double>(d,names::dg_in, y_[DG_IN]);
++  updateValue<double>(d,names::w,     y_[W]);
++
++  updateValue<double>(d,names::g_n,  y_[G_N]);
++  updateValue<double>(d,names::dg_n, y_[DG_N]);
++
++  if ( y_[G_EX] < 0 || y_[G_IN] < 0 || y_[G_N] < 0 )
++    throw BadProperty("Conductances must not be negative.");
++}
++
++nest::aeif_cond_nmda_alpha::Buffers_::Buffers_(aeif_cond_nmda_alpha& n)
++  : logger_(n),
++    s_(0),
++    c_(0),
++    e_(0)
++{
++  // The other member variables are left uninitialised or are
++  // automatically initialised by their default constructor.
++}
++
++nest::aeif_cond_nmda_alpha::Buffers_::Buffers_(const Buffers_&, aeif_cond_nmda_alpha& n)
++  : logger_(n),
++    s_(0),
++    c_(0),
++    e_(0)
++{
++  // The other member variables are left uninitialised or are
++  // automatically initialised by their default constructor.
++}
++
++
++/* ---------------------------------------------------------------- 
++ * Default and copy constructor for node, and destructor
++ * ---------------------------------------------------------------- */
++
++nest::aeif_cond_nmda_alpha::aeif_cond_nmda_alpha()
++  : Archiving_Node(), 
++    P_(), 
++    S_(P_),
++    B_(*this)
++{
++    recordablesMap_.create();
++}
++
++nest::aeif_cond_nmda_alpha::aeif_cond_nmda_alpha(const aeif_cond_nmda_alpha& n)
++  : Archiving_Node(n), 
++    P_(n.P_), 
++    S_(n.S_),
++    B_(n.B_, *this)
++{
++}
++
++nest::aeif_cond_nmda_alpha::~aeif_cond_nmda_alpha()
++{
++  // GSL structs only allocated by init_nodes_(), so we need to protect destruction
++  if ( B_.s_ ) gsl_odeiv_step_free(B_.s_);
++  if ( B_.c_ ) gsl_odeiv_control_free(B_.c_);
++  if ( B_.e_ ) gsl_odeiv_evolve_free(B_.e_);
++}
++
++/* ---------------------------------------------------------------- 
++ * Node initialization functions
++ * ---------------------------------------------------------------- */
++
++void nest::aeif_cond_nmda_alpha::init_node_(const Node& proto)
++{
++  const aeif_cond_nmda_alpha& pr = downcast<aeif_cond_nmda_alpha>(proto);
++  P_ = pr.P_;
++  S_ = pr.S_;
++}
++
++void nest::aeif_cond_nmda_alpha::init_state_(const Node& proto)
++{
++  const aeif_cond_nmda_alpha& pr = downcast<aeif_cond_nmda_alpha>(proto);
++  S_ = pr.S_;
++}
++
++void nest::aeif_cond_nmda_alpha::init_buffers_()
++{
++  B_.spike_exc_.clear();       // includes resize
++  B_.spike_inh_.clear();       // includes resize
++  B_.spike_nmda_.clear();       // includes resize
++  B_.currents_.clear();        // includes resize
++//  B_.potentials_.clear_data(); // includes resize
++//  B_.conductances_.clear_data(); // includes resize
++//  B_.aeif_ws_.clear_data();      // includes resize
++  Archiving_Node::clear_history();
++  
++  B_.logger_.reset();
++
++  B_.step_ = Time::get_resolution().get_ms();
++
++  // We must integrate this model with high-precision to obtain decent results
++  B_.IntegrationStep_ = std::min(0.01, B_.step_);
++
++  static const gsl_odeiv_step_type* T1 = gsl_odeiv_step_rkf45;
++  
++  if ( B_.s_ == 0 )
++    B_.s_ = gsl_odeiv_step_alloc (T1, aeif_cond_nmda_alpha::NSTATES);
++  else 
++    gsl_odeiv_step_reset(B_.s_);
++    
++  if ( B_.c_ == 0 )  
++    B_.c_ = gsl_odeiv_control_yp_new (1e-6,1e-6);
++  else
++    gsl_odeiv_control_init(B_.c_, 1e-6, 1e-6, 0.0, 1.0);
++    
++  if ( B_.e_ == 0 )  
++    B_.e_ = gsl_odeiv_evolve_alloc(aeif_cond_nmda_alpha::NSTATES);
++  else 
++    gsl_odeiv_evolve_reset(B_.e_);
++  
++  B_.sys_.function  = aeif_cond_nmda_alpha_dynamics; 
++  B_.sys_.jacobian  = NULL;
++  B_.sys_.dimension =  aeif_cond_nmda_alpha::NSTATES;
++  B_.sys_.params    = reinterpret_cast<void*>(&P_);
++}
++
++void nest::aeif_cond_nmda_alpha::calibrate()
++{
++      B_.logger_.init();  // ensures initialization in case mm connected after Simulate
++  V_.g0_ex_  = 1.0 * numerics::e / P_.tau_syn_ex;
++  V_.g0_in_  = 1.0 * numerics::e / P_.tau_syn_in;
++  V_.g0_n_  = 1.0 * numerics::e / P_.tau_syn_n;
++  V_.RefractoryCounts_ = Time(Time::ms(P_.t_ref_)).get_steps();
++  assert(V_.RefractoryCounts_ >= 0);  // since t_ref_ >= 0, this can only fail in error
++}
++
++/* ---------------------------------------------------------------- 
++ * Update and spike handling functions
++ * ---------------------------------------------------------------- */
++
++void nest::aeif_cond_nmda_alpha::update(Time const & origin, const long_t from, const long_t to)
++{
++  assert ( to >= 0 && (delay) from < Scheduler::get_min_delay() );
++  assert ( from < to );
++  assert ( V_M == 0 );
++
++  for ( long_t lag = from; lag < to; ++lag )
++  {
++    double t = 0.0;
++
++    if ( S_.r_ > 0 )
++      --S_.r_;
++
++    // numerical integration with adaptive step size control:
++    // ------------------------------------------------------
++    // gsl_odeiv_evolve_apply performs only a single numerical
++    // integration step, starting from t and bounded by step;
++    // the while-loop ensures integration over the whole simulation
++    // step (0, step] if more than one integration step is needed due
++    // to a small integration step size;
++    // note that (t+IntegrationStep > step) leads to integration over
++    // (t, step] and afterwards setting t to step, but it does not
++    // enforce setting IntegrationStep to step-t; this is of advantage
++    // for a consistent and efficient integration across subsequent
++    // simulation intervals
++    while ( t < B_.step_ )
++    {
++      const int status = gsl_odeiv_evolve_apply(B_.e_, B_.c_, B_.s_, 
++		  	   &B_.sys_,             // system of ODE
++			   &t,                   // from t
++			    B_.step_,            // to t <= step
++			   &B_.IntegrationStep_, // integration step size
++			    S_.y_);              // neuronal state
++
++      if ( status != GSL_SUCCESS )
++        throw GSLSolverFailure(get_name(), status);
++
++      // spikes are handled inside the while-loop
++      // due to spike-driven adaptation
++      if ( S_.r_ > 0 )
++        S_.y_[V_M] = P_.V_reset_;
++      else if ( S_.y_[V_M] >= P_.V_peak_ )
++      {
++	S_.y_[V_M]  = P_.V_reset_;
++	S_.y_[W]   += P_.b; // spike-driven adaptation
++	S_.r_       = V_.RefractoryCounts_;
++	      
++	set_spiketime(Time::step(origin.get_steps() + lag + 1));
++	SpikeEvent se;
++	network()->send(*this, se, lag);
++      }
++    }
++
++    S_.y_[DG_EX] += B_.spike_exc_.get_value(lag) * V_.g0_ex_;
++    S_.y_[DG_IN] += B_.spike_inh_.get_value(lag) * V_.g0_in_;
++     
++    // NMDA input
++
++    
++    S_.y_[DG_N] += B_.spike_nmda_.get_value(lag) /
++	(1 + std::exp(-4.0 * P_.N_gain * 
++		      ((S_.y_[V_M] - P_.N_V_min)/(P_.N_V_max - P_.N_V_min) - 0.5))) * 
++	V_.g0_n_;
++
++
++    // set new input current
++    P_.I_stim = B_.currents_.get_value(lag);
++
++    // voltage logging
++//    B_.potentials_.record_data(origin.get_steps()+lag, S_.y_[V_M]);
++//    B_.conductances_.record_data(origin.get_steps()+lag, 
++//				   std::pair<nest::double_t, nest::double_t>(S_.y_[G_EX], S_.y_[G_IN]));
++//    B_.aeif_ws_.record_data(origin.get_steps()+lag, S_.y_[W]);
++    
++        B_.logger_.record_data(origin.get_steps() + lag);
++  }
++}
++  
++void nest::aeif_cond_nmda_alpha::handle(SpikeEvent & e)
++{
++  assert(e.get_delay() > 0);
++//printf ("\tSynapse: %d\n", e.get_rport());
++  if (e.get_rport() == 0) {
++
++      if(e.get_weight() > 0.0)
++	B_.spike_exc_.add_value(e.get_rel_delivery_steps(network()->get_slice_origin()),
++			     e.get_weight() * e.get_multiplicity());
++      else
++	B_.spike_inh_.add_value(e.get_rel_delivery_steps(network()->get_slice_origin()),
++			     -e.get_weight() * e.get_multiplicity());  // keep conductances positive
++
++  } else if (e.get_rport() == 1) {
++	B_.spike_nmda_.add_value(e.get_rel_delivery_steps(network()->get_slice_origin()),
++			     e.get_weight() * e.get_multiplicity());
++  }
++}
++
++void nest::aeif_cond_nmda_alpha::handle(CurrentEvent& e)
++{
++  assert(e.get_delay() > 0);
++
++  const nest::double_t c=e.get_current();
++  const nest::double_t w=e.get_weight();
++
++  // add weighted current; HEP 2002-10-04
++  B_.currents_.add_value(e.get_rel_delivery_steps(network()->get_slice_origin()), 
++		      w *c);
++}
++
++void nest::aeif_cond_nmda_alpha::handle(DataLoggingRequest& e)
++{
++      B_.logger_.handle(e);
++}
++
++
++#endif //HAVE_GSL_1_11
+diff --git a/models/aeif_cond_nmda_alpha.h b/models/aeif_cond_nmda_alpha.h
+new file mode 100644
+index 0000000..fb9f285
+--- /dev/null
++++ b/models/aeif_cond_nmda_alpha.h
+@@ -0,0 +1,412 @@
++/*
++ *  aeif_cond_nmda_alpha.h
++ *
++ * Adaptive exponential integrate-and-fire model (Brette and Gerstner) with
++ * alpha-shaped synaptic conductances, as implemented in aeif_cond_alpha.h 
++ * from the nest simulator (v. 1.9.8498).
++ *
++ * This version adds an NMDA synapse-like input with positive
++ * voltage-dependence on the conductance.
++ *
++ * Jan Moren, 2009
++ *
++ * 2011 - Update for nest2
++ *
++ * Original model:
++ *
++ *  Copyright (C) 2005 by
++ *  The NEST Initiative
++ *
++ *  See the file AUTHORS for details.
++ *
++ *  Permission is granted to compile and modify
++ *  this file for non-commercial use.
++ *  See the file LICENSE for details.
++ *
++ */
++
++#ifndef AEIF_COND_NMDA_ALPHA_H
++#define AEIF_COND_NMDA_ALPHA_H
++
++#include "config.h"
++
++#ifdef HAVE_GSL_1_11
++
++#include "nest.h"
++#include "event.h"
++#include "archiving_node.h"
++#include "ring_buffer.h"
++#include "connection.h"
++
++#include "universal_data_logger.h"
++#include "recordables_map.h"
++
++//#include "analog_data_logger.h"
++
++#include <gsl/gsl_errno.h>
++#include <gsl/gsl_matrix.h>
++#include <gsl/gsl_odeiv.h>
++
++/* BeginDocumentation
++Name: aeif_cond_nmda_alpha -  Conductance based exponential integrate-and-fire
++neuron model according to Brette and Gerstner (2005).
++
++Description: aeif_cond_nmda_alpha is the adaptive exponential integrate and
++fire neuron according to Brette and Gerstner (2005).  Synaptic conductances
++are modelled as alpha-functions.
++
++This implementation uses the embedded 4th order Runge-Kutta-Fehlberg solver
++with adaptive stepsize to integrate the differential equation.
++
++The membrane potential is given by the following differential equation: C
++dV/dt= -g_L(V-E_L)+g_L*Delta_T*exp((V-V_T)/Delta_T)-g_e(t)(V-E_e)
++-g_i(t)(V-E_i)-w +I_e
++
++and
++
++tau_w * dw/dt= a(V-E_L) -W
++
++Parameters: 
++The following parameters can be set in the status dictionary.
++
++Dynamic state variables:
++  V_m        double - Membrane potential in mV
++  g_ex       double - Excitatory synaptic conductance in nS.
++  dg_ex      double - First derivative of g_ex in nS/ms
++  g_in       double - Inhibitory synaptic conductance in nS.
++  dg_in      double - First derivative of g_in in nS/ms.
++  w          double - Spike-adaptation current in pA.
++
++Membrane Parameters:
++  C_m        double - Capacity of the membrane in pF
++  t_ref      double - Duration of refractory period in ms. 
++  V_peak     double - Spike detection threshold in mV.
++  V_reset    double - Reset value for V_m after a spike. In mV.
++  E_L        double - Leak reversal potential in mV. 
++  g_L        double - Leak conductance in nS.
++  I_e        double - Constant external input current in pA.
++
++Spike adaptation parameters:
++  a          double - Subthreshold adaptation in nS.
++  b          double - Spike-triggered adaptation in pA.
++  Delta_T    double - Slope factor in mV
++  tau_w      double - Adaptation time constant in ms
++  V_t        double - Spike initiation threshold in mV (V_th can also be used for compatibility).
++
++Synaptic parameters
++  E_ex       double - Excitatory reversal potential in mV.
++  tau_syn_ex double - Rise time of excitatory synaptic conductance in ms (alpha function).
++  E_in       double - Inhibitory reversal potential in mV.
++  tau_syn_in double - Rise time of the inhibitory synaptic conductance in ms (alpha function).
++
++NMDA parameters
++  NMDA_V_max double - Membrane voltage for the upper "shoulder" of the NMDA sigmoid 
++  NMDA_V_min double - Membrane voltage for the lower "shoulder" of the NMDA sigmoid
++  NMDA_gain  double - gain factor for unit sigmoid _before_ scaling 
++  E_n       double - NMDA reversal potential in mV.
++  tau_syn_n  double - Rise time of nmda synaptic conductance in ms (alpha function).
++    
++Author: Marc-Oliver Gewaltig
++
++Sends: SpikeEvent
++
++Receives: SpikeEvent, CurrentEvent, DataLoggingRequest
++
++References: Brette R and Gerstner W (2005) Adaptive Exponential Integrate-and-Fire Model as 
++            an Effective Description of Neuronal Activity. J
++            Neurophysiol 94:3637-3642
++
++SeeAlso: iaf_cond_alpha
++*/
++
++namespace nest
++{
++  class Network;
++
++  class aeif_cond_nmda_alpha:
++  public Archiving_Node
++  {
++    
++  public:        
++    
++    aeif_cond_nmda_alpha();
++    aeif_cond_nmda_alpha(const aeif_cond_nmda_alpha&);
++    ~aeif_cond_nmda_alpha();
++
++    /**
++     * Import sets of overloaded virtual functions.
++     * We need to explicitly include sets of overloaded
++     * virtual functions into the current scope.
++     * According to the SUN C++ FAQ, this is the correct
++     * way of doing things, although all other compilers
++     * happily live without.
++     */
++/* #ifndef IS_BLUEGENE
++   using Node::check_connection;
++#endif */
++    using Node::connect_sender;
++    using Node::handle;
++
++    port check_connection(Connection&, port);
++    
++    void handle(SpikeEvent &);
++    void handle(CurrentEvent &);
++    void handle(DataLoggingRequest &); 
++    
++    port connect_sender(SpikeEvent &, port);
++    port connect_sender(CurrentEvent &, port);
++    port connect_sender(DataLoggingRequest &, port);
++
++    void get_status(DictionaryDatum &) const;
++    void set_status(const DictionaryDatum &);
++    
++  private:
++    
++    void init_node_(const Node& proto);
++    void init_state_(const Node& proto);
++    void init_buffers_();
++    void calibrate();
++    void update(Time const &, const long_t, const long_t);
++	    friend class RecordablesMap<aeif_cond_nmda_alpha>;
++	    friend class UniversalDataLogger<aeif_cond_nmda_alpha>;
++  public:
++
++    // ---------------------------------------------------------------- 
++
++    /** 
++     * Independent parameters of the model. 
++     * These parameters must be passed to the iteration function that
++     * is passed to the GSL ODE solvers. Since the iteration function
++     * is a C++ function with C linkage, the parameters can be stored
++     * in a C++ struct with member functions, as long as we just pass
++     * it by void* from C++ to C++ function. The struct must be public,
++     * though, since the iteration function is a function with C-linkage,
++     * whence it cannot be a member function of iaf_cond_nmda_alpha.
++     * @note One could achieve proper encapsulation by an extra level
++     *       of indirection: Define the iteration function as a member
++     *       function, plus an additional wrapper function with C linkage.
++     *       Then pass a struct containing a pointer to the node and a
++     *       pointer-to-member-function to the iteration function as void*
++     *       to the wrapper function. The wrapper function can then invoke
++     *       the iteration function on the node (Stroustrup, p 418). But
++     *       this appears to involved, and the extra indirections cost.
++     */
++    struct Parameters_ {
++      double_t V_peak_;     //!< Spike detection threshold in mV
++      double_t V_reset_;    //!< Reset Potential in mV
++      double_t t_ref_;      //!< Refractory period in ms
++
++      double_t g_L;         //!< Leak Conductance in nS
++      double_t C_m;         //!< Membrane Capacitance in pF
++      double_t E_ex;        //!< Excitatory reversal Potential in mV
++      double_t E_in;        //!< Inhibitory reversal Potential in mV
++      double_t E_L;         //!< Leak reversal Potential (aka resting potential) in mV
++      double_t Delta_T;     //!< Slope faktor in ms.
++      double_t tau_w;       //!< adaptation time-constant in ms.
++      double_t a;           //!< Subthreshold adaptation in nS.
++      double_t b;           //!< Spike-triggered adaptation in pA
++      double_t V_th;        //!< Spike threshold in mV.
++      double_t t_ref;       //!< Refractory period in ms.
++      double_t tau_syn_ex;  //!< Excitatory synaptic rise time.
++      double_t tau_syn_in;  //!< Excitatory synaptic rise time.
++      double_t I_e;         //!< Intrinsic current in pA.
++
++      double_t N_V_max;      //!< NMDA max membrane voltage 
++      double_t N_V_min;	  //!< NMDA min membrane voltage
++      double_t N_gain;	  //!< NMDA sigmoid gain
++      double_t E_n;        //!< NMDA reversal Potential in mV
++      double_t tau_syn_n;   //!< NMDA synaptic rise time.
++  
++      /** 
++       * External input current from CurrentEvents.
++       * This is not a parameter but a variable. It is still placed here, since
++       * it needs to be passed to the iteration function. We thus avoid the need
++       * of an additional wrapper structure. It is not revealed or manipulateable.
++       */
++      double_t I_stim;      //!< External Stimulus in pA
++  
++      Parameters_();  //!< Sets default parameter values
++
++      void get(DictionaryDatum&) const;  //!< Store current values in dictionary
++      void set(const DictionaryDatum&);  //!< Set values from dicitonary
++    };
++  
++  /**
++   * Enumeration identifying elements in state array State_::y_.
++   * The state vector must be passed to GSL as a C array. This enum
++   * identifies the elements of the vector. It must be public to be
++   * accessible from the iteration function.
++   */  
++  enum Statevars
++  {
++    V_M   = 0,
++    DG_EX    ,  // 1
++    G_EX     ,  // 2
++    DG_IN    ,  // 3
++    G_IN     ,  // 4
++    W        ,  // 5
++    DG_N    ,   // 6
++    G_N     ,   // 7
++    NSTATES
++  };
++    
++    
++  private:
++    // ---------------------------------------------------------------- 
++
++    /**
++     * State variables of the model.
++     * @note Copy constructor and assignment operator required because
++     *       of C-style array.
++     */
++    struct State_ {
++      double_t y_[NSTATES];  //!< neuron state, must be C-array for GSL solver
++      int_t    r_;           //!< number of refractory steps remaining
++
++      State_(const Parameters_&);  //!< Default initialization
++      State_(const State_&);
++      State_& operator=(const State_&);
++
++      void get(DictionaryDatum&) const;
++      void set(const DictionaryDatum&, const Parameters_&);
++    };    
++
++    // ---------------------------------------------------------------- 
++
++    /**
++     * Buffers of the model.
++     */
++    struct Buffers_ {
++	Buffers_(aeif_cond_nmda_alpha&);
++	Buffers_(const Buffers_&, aeif_cond_nmda_alpha&);
++//	Buffers_(); //!<Sets buffer pointers to 0
++      /** buffers and sums up incoming spikes/currents */
++      RingBuffer spike_exc_;
++      RingBuffer spike_inh_;
++      RingBuffer spike_nmda_;
++      RingBuffer currents_;
++	UniversalDataLogger<aeif_cond_nmda_alpha> logger_;
++      
++//	AnalogDataLogger<PotentialRequest>           potentials_;
++//      AnalogDataLogger<SynapticConductanceRequest> conductances_;
++//      AnalogDataLogger<AeifWRequest>               aeif_ws_;
++
++      /** GSL ODE stuff */
++      gsl_odeiv_step*    s_;    //!< stepping function
++      gsl_odeiv_control* c_;    //!< adaptive stepsize control function
++      gsl_odeiv_evolve*  e_;    //!< evolution function
++      gsl_odeiv_system   sys_;  //!< struct describing system
++      
++      // IntergrationStep_ should be reset with the neuron on ResetNetwork,
++      // but remain unchanged during calibration. Since it is initialized with
++      // step_, and the resolution cannot change after nodes have been created,
++      // it is safe to place both here.
++      double_t step_;           //!< step size in ms
++      double   IntegrationStep_;//!< current integration time step, updated by GSL
++    };
++
++     // ---------------------------------------------------------------- 
++
++     /**
++      * Internal variables of the model.
++      */
++     struct Variables_ { 
++      /** initial value to normalise excitatory synaptic conductance */
++      double_t g0_ex_; 
++   
++      /** initial value to normalise inhibitory synaptic conductance */
++      double_t g0_in_;    
++
++      /** initial value to normalise NMDA synaptic conductance */
++      double_t g0_n_; 
++
++      int_t    RefractoryCounts_;
++     };
++
++    // Access functions for UniversalDataLogger -------------------------------
++    
++    //! Read out state vector elements, used by UniversalDataLogger
++    template <Statevars elem>
++    double_t get_y_elem_() const { return S_.y_[elem]; }
++    // ---------------------------------------------------------------- 
++
++    Parameters_ P_;
++    State_      S_;
++    Variables_  V_;
++    Buffers_    B_;
++    static RecordablesMap<aeif_cond_nmda_alpha> recordablesMap_;
++  };
++
++  inline  
++  port aeif_cond_nmda_alpha::check_connection(Connection& c, port receptor_type)
++  {
++
++    //  printf ("\tCheckSynapse: %d\n", receptor_type);
++    SpikeEvent e;
++    e.set_sender(*this);
++    c.check_event(e);
++    return c.get_target()->connect_sender(e, receptor_type);
++  }
++
++  inline
++  port aeif_cond_nmda_alpha::connect_sender(SpikeEvent&, port receptor_type)
++  {
++    // 0: normal synapse, 1: NMDA synapse
++    //  printf ("\n\tSynapse: %d \n\n", receptor_type);
++    if (receptor_type >= 2)
++      throw UnknownReceptorType(receptor_type, get_name());
++    return receptor_type;
++  }
++ 
++  inline
++  port aeif_cond_nmda_alpha::connect_sender(CurrentEvent&, port receptor_type)
++  {
++    if (receptor_type != 0)
++      throw UnknownReceptorType(receptor_type, get_name());
++    return 0;
++  }
++ 
++  inline
++  port aeif_cond_nmda_alpha::connect_sender(DataLoggingRequest& dlr, port receptor_type)
++  {
++    if (receptor_type != 0)
++      throw UnknownReceptorType(receptor_type, get_name());
++    //B_.potentials_.connect_logging_device(pr);
++    //return 0;
++      return B_.logger_.connect_logging_device(dlr, recordablesMap_);
++  }
++
++
++  inline
++  void aeif_cond_nmda_alpha::get_status(DictionaryDatum &d) const
++  {
++    P_.get(d);
++    S_.get(d);
++    Archiving_Node::get_status(d);
++
++    (*d)[names::recordables] = recordablesMap_.get_list();
++  }
++
++  inline
++  void aeif_cond_nmda_alpha::set_status(const DictionaryDatum &d)
++  {
++    Parameters_ ptmp = P_;  // temporary copy in case of errors
++    ptmp.set(d);                       // throws if BadProperty
++    State_      stmp = S_;  // temporary copy in case of errors
++    stmp.set(d, ptmp);                 // throws if BadProperty
++
++    // We now know that (ptmp, stmp) are consistent. We do not 
++    // write them back to (P_, S_) before we are also sure that 
++    // the properties to be set in the parent class are internally 
++    // consistent.
++    Archiving_Node::set_status(d);
++
++    // if we get here, temporaries contain consistent set of properties
++    P_ = ptmp;
++    S_ = stmp;
++  }
++  
++} // namespace
++
++#endif //HAVE_GSL
++#endif //AEIF_COND_NMDA_ALPHA_H
+-- 
+1.8.1.2
+
+
+From bde56ea180450dfdd5f5604d2a65f39756b9248d Mon Sep 17 00:00:00 2001
+From: Jan Moren <jan.moren@gmail.com>
+Date: Tue, 6 Aug 2013 15:00:24 +0900
+Subject: [PATCH 3/3] add synth_integrator model
+
+---
+ models/synth_integrator.cpp | 219 ++++++++++++++++++++++++++++++++++
+ models/synth_integrator.h   | 285 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 504 insertions(+)
+ create mode 100644 models/synth_integrator.cpp
+ create mode 100644 models/synth_integrator.h
+
+diff --git a/models/synth_integrator.cpp b/models/synth_integrator.cpp
+new file mode 100644
+index 0000000..e84e2c7
+--- /dev/null
++++ b/models/synth_integrator.cpp
+@@ -0,0 +1,219 @@
++/*
++ *  synth_integrator.cpp
++ *
++ *  This file is part of NEST
++ *
++ *  Copyright (C) 2004-2008 by
++ *  The NEST Initiative
++ *
++ *  See the file AUTHORS for details.
++ *
++ *  Permission is granted to compile and modify
++ *  this file for non-commercial use.
++ *  See the file LICENSE for details.
++ *
++ *  (C) 2010 Jan Morén 
++ */
++
++//#include "scmodules_names.h"
++#include "exceptions.h"
++#include "synth_integrator.h"
++#include "network.h"
++#include "dict.h"
++#include "integerdatum.h"
++#include "doubledatum.h"
++#include "dictutils.h"
++#include "numerics.h"
++//#include "analog_data_logger_impl.h"
++#include "universal_data_logger_impl.h"
++
++#include <limits>
++
++/* ---------------------------------------------------------------- 
++ * Recordables map
++ * ---------------------------------------------------------------- */
++
++nest::RecordablesMap<nest::synth_integrator> nest::synth_integrator::recordablesMap_;
++
++using namespace nest;
++
++namespace nest {
++/*
++   * Override the create() method with one call to RecordablesMap::insert_() 
++   * for each quantity to be recorded.
++   */
++    template <>
++    void RecordablesMap<nest::synth_integrator>::create()
++    {
++	// use standard names whereever you can for consistency!
++	//insert_(nest::names::V_m, &nest::synth_integrator::get_V_m_);
++	insert_("weighted_spikes_ex", &nest::synth_integrator::get_weighted_spikes_ex_);
++	insert_("weighted_spikes_in", &nest::synth_integrator::get_weighted_spikes_in_);
++    }
++}
++/* ---------------------------------------------------------------- 
++ * Default constructors defining default parameters and state
++ * ---------------------------------------------------------------- */
++
++nest::synth_integrator::Parameters_::Parameters_()
++    : Smax_	    ( 1000.0    ),	// integrated value for 1/ms spike
++    Gamma_	    (1.0    ),		//  gamma scale
++    Reset_	    (10.0    )		//  reset input threshold
++{}
++
++nest::synth_integrator::State_::State_()
++    : acc_   (0.0)
++{}
++
++/* ---------------------------------------------------------------- 
++ * Paramater and state extractions and manipulation functions
++ * ---------------------------------------------------------------- */
++
++void nest::synth_integrator::Parameters_::get(DictionaryDatum &d) const
++{
++
++    def<double>(d, names::Smax, Smax_);
++    def<double>(d, names::Gamma, Gamma_);
++    def<double>(d, names::Reset, Reset_);
++}
++
++void nest::synth_integrator::Parameters_::set(const DictionaryDatum& d)
++{
++    updateValue<double>(d, names::Gamma, Gamma_);
++    updateValue<double>(d, names::Reset, Reset_);
++    updateValue<double>(d, names::Smax, Smax_);
++}
++
++void nest::synth_integrator::State_::get(DictionaryDatum &d, const Parameters_& p) const
++{
++    //  def<double>(d, nest::names::V_m, y3_ + p.U0_); // Membrane potential
++}
++
++void nest::synth_integrator::State_::set(const DictionaryDatum& d, const Parameters_& p)
++{
++    //if ( updateValue<double>(d, nest::names::V_m, y3_) )
++    //  y3_ -= p.U0_;
++}
++nest::synth_integrator::Buffers_::Buffers_(synth_integrator& n)
++  : logger_(n)
++{}
++
++nest::synth_integrator::Buffers_::Buffers_(const Buffers_&, synth_integrator& n)
++  : logger_(n)
++{}
++/* ---------------------------------------------------------------- 
++ * Default and copy constructor for node
++ * ---------------------------------------------------------------- */
++
++    nest::synth_integrator::synth_integrator()
++: Archiving_Node(), 
++    P_(), 
++    S_(),
++    B_(*this)
++{
++  recordablesMap_.create();
++}
++
++    nest::synth_integrator::synth_integrator(const synth_integrator& n)
++: Archiving_Node(n), 
++    P_(n.P_), 
++    S_(n.S_),
++    B_(n.B_, *this)
++{}
++
++/* ---------------------------------------------------------------- 
++ * Node initialization functions
++ * ---------------------------------------------------------------- */
++
++void nest::synth_integrator::init_node_(const Node& proto)
++{
++    const synth_integrator& pr = downcast<synth_integrator>(proto);
++    P_ = pr.P_;
++    S_ = pr.S_;
++}
++
++void nest::synth_integrator::init_state_(const Node& proto)
++{
++    const synth_integrator& pr = downcast<synth_integrator>(proto);
++    S_ = pr.S_;
++}
++
++void nest::synth_integrator::init_buffers_()
++{
++    B_.ex_spikes_.clear();       // includes resize
++    B_.in_spikes_.clear();       // includes resize
++    B_.logger_.reset();
++    Archiving_Node::clear_history();
++}
++
++void nest::synth_integrator::calibrate()
++{
++    B_.logger_.init();  // ensures initialization in case mm connected after Simulate
++    V_.t_res = Time::get_resolution().get_ms(); 
++}
++
++/* ---------------------------------------------------------------- 
++ * Update and spike handling functions
++ */
++
++void nest::synth_integrator::update(Time const & origin, const long_t from, const long_t to)
++{
++    assert(to >= 0 && (delay) from < Scheduler::get_min_delay());
++    assert(from < to);
++
++    double rn, prop;
++
++    double resetc = 0.0;
++
++    for ( long_t lag = from ; lag < to ; ++lag )
++    {
++
++	V_.weighted_spikes_ex_ = B_.ex_spikes_.get_value(lag);	
++	V_.weighted_spikes_in_ = B_.in_spikes_.get_value(lag);
++
++	S_.acc_ += V_.weighted_spikes_ex_;
++	
++
++	resetc += (-V_.weighted_spikes_in_);
++	if (resetc > P_.Reset_)
++	    S_.acc_ = 0.0;
++
++	prop = pow((S_.acc_/(P_.Smax_)),(1.0/P_.Gamma_));
++	rn = random()/(RAND_MAX+1.0)/V_.t_res;
++
++	if (rn<= prop) { 
++	    SpikeEvent se;
++	    network()->send(*this, se, lag);
++	}
++    
++	B_.logger_.record_data(origin.get_steps() + lag);
++    }                           
++}
++
++
++void nest::synth_integrator::handle(SpikeEvent & e)
++{
++    assert(e.get_delay() > 0);
++
++    //printf ("\tSynapse: %d\n", e.get_rport());
++    if (e.get_rport()==0) {
++	if(e.get_weight() > 0.0)
++	    B_.ex_spikes_.add_value(e.get_rel_delivery_steps(network()->get_slice_origin()),
++		    e.get_weight() * e.get_multiplicity() );
++	else if (e.get_weight() < 0.0)
++	    B_.in_spikes_.add_value(e.get_rel_delivery_steps(network()->get_slice_origin()),
++		    e.get_weight() * e.get_multiplicity() );
++    }
++}
++
++void nest::synth_integrator::handle(CurrentEvent& e)
++{
++    assert(e.get_delay() > 0);
++}
++
++void nest::synth_integrator::handle(DataLoggingRequest& e)
++{
++    B_.logger_.handle(e);
++}
++
++// namespace
+diff --git a/models/synth_integrator.h b/models/synth_integrator.h
+new file mode 100644
+index 0000000..d7667ab
+--- /dev/null
++++ b/models/synth_integrator.h
+@@ -0,0 +1,285 @@
++/*
++ *  synth_integrator.h
++ *
++ *  This file is part of NEST
++ *
++ *  Copyright (C) 2004-2008 by
++ *  The NEST Initiative
++ *
++ *  See the file AUTHORS for details.
++ *
++ *  Permission is granted to compile and modify
++ *  this file for non-commercial use.
++ *  See the file LICENSE for details.
++ *
++ *  (C) 2010 Jan Morén 
++ *
++ * This version is for nest2 prereleases. The logging API has changed so we
++ * can no longer use the same module code for different nest versions.
++ *
++ */
++
++#ifndef SYNTH_INTEGRATOR
++#define SYNTH_INTEGRATOR
++
++#include "nest.h"
++#include "event.h"
++#include "archiving_node.h"
++#include "ring_buffer.h"
++#include "connection.h"
++#include "universal_data_logger.h"
++#include "recordables_map.h"
++
++//#include "analog_data_logger.h"
++
++namespace nest
++{
++
++  class Network;
++
++  /* BeginDocumentation
++Name: synth_integrator - Input integrator.
++
++Description:
++
++  synth integrator takes weighted spiking input, sums it over time, and emits 
++  spikes at a rate proportional to the summed input. 
++
++  This is intended as a synthetic replacement or placeholder to a real spike
++  integrator circuit. Useful for testing networks where an integrating input 
++  is assumed, or to tune a real integrating circuit.
++
++  Hacked-up from iaf_psc_nmda_alpha
++
++Parameters: 
++
++  The following parameters can be set in the status dictionary.
++
++    Smax    double	The accumulated spike*weight at which point the 
++			model emits 1 spike/ms.
++    Gamma   double	nonlinear scaling factor
++    Reset   double	Negative rate input for resetting the integrator
++
++
++Receives: SpikeEvent, DataLoggingRequest
++
++Author:  February 2010, Moren
++*/
++
++  /**
++   * Leaky integrate-and-fire neuron with alpha-shaped PSCs.
++   */
++  class synth_integrator : public Archiving_Node
++    {
++
++	public:        
++
++	    typedef Node base;
++
++	    synth_integrator();
++	    synth_integrator(const synth_integrator&);
++
++	    /**
++	     * Import sets of overloaded virtual functions.
++	     * We need to explicitly include sets of overloaded
++	     * virtual functions into the current scope.
++	     * According to the SUN C++ FAQ, this is the correct
++	     * way of doing things, although all other compilers
++	     * happily live without.
++	     */
++/*#ifndef IS_BLUEGENE
++	    using Node::check_connection;
++#endif*/
++	    using Node::connect_sender;
++	    using Node::handle;
++
++	    port check_connection(Connection&, port);
++
++	    void handle(SpikeEvent &);
++	    void handle(CurrentEvent &);
++	    //void handle(PotentialRequest &);
++	    void handle(DataLoggingRequest &);
++
++	    port connect_sender(SpikeEvent&, port);
++	    port connect_sender(CurrentEvent&, port);
++	    //port connect_sender(PotentialRequest&, port);
++	    port connect_sender(DataLoggingRequest&, port);
++
++	    void get_status(DictionaryDatum &) const;
++	    void set_status(const DictionaryDatum &);
++
++	private:
++
++	    void init_node_(const Node& proto);
++	    void init_state_(const Node& proto);
++	    void init_buffers_();
++	    void calibrate();
++
++	    void update(Time const &, const long_t, const long_t);
++	    friend class RecordablesMap<synth_integrator>;
++	    friend class UniversalDataLogger<synth_integrator>;
++
++	    // ---------------------------------------------------------------- 
++
++	    /** 
++	     * Independent parameters of the model. 
++	     */
++	    struct Parameters_ {
++
++		/** event limit - at this point we do one spike per ms **/
++		double_t Smax_;
++
++		/** gamma factor for probability scaling **/
++		double_t Gamma_;
++		double_t Reset_;
++
++
++
++		Parameters_();  //!< Sets default parameter values
++
++		void get(DictionaryDatum&) const;  //!< Store current values in dictionary
++		void set(const DictionaryDatum&);  //!< Set values from dicitonary
++	    };
++
++	    // ---------------------------------------------------------------- 
++
++	    /**
++	     * State variables of the model.
++	     */
++	    struct State_ {
++		double_t acc_; // Currently accumulated events 
++
++		State_();  //!< Default initialization
++
++		void get(DictionaryDatum&, const Parameters_&) const;
++		void set(const DictionaryDatum&, const Parameters_&);
++	    };    
++
++	    // ---------------------------------------------------------------- 
++
++	    /**
++	     * Buffers of the model.
++	     */
++	    struct Buffers_ {
++		Buffers_(synth_integrator&);
++		Buffers_(const Buffers_&, synth_integrator&);
++		/** buffers and summs up incoming spikes/currents */
++		RingBuffer ex_spikes_;
++		RingBuffer in_spikes_;
++		//RingBuffer currents_;
++
++		/** Buffer for membrane potential. */
++		//AnalogDataLogger<PotentialRequest> potentials_;
++		UniversalDataLogger<synth_integrator> logger_;
++	    };
++
++	    // ---------------------------------------------------------------- 
++
++	    /**
++	     * Internal variables of the model.
++	     */
++	    struct Variables_ { 
++
++		double_t t_res;	    // Time resolution
++		double_t weighted_spikes_ex_; // Not sure we need or want these
++		double_t weighted_spikes_in_;
++
++	    };
++
++	    // Access functions for UniversalDataLogger -------------------------------
++
++	    //! Read out the real membrane potential
++//	    double_t get_V_m_() const { return S_.y3_ + P_.U0_; }
++
++	    double_t get_weighted_spikes_ex_() const { return V_.weighted_spikes_ex_; }
++	    double_t get_weighted_spikes_in_() const { return V_.weighted_spikes_in_; }
++
++	    // ---------------------------------------------------------------- 
++
++	    /**
++	     * @defgroup synth_integrator_data
++	     * Instances of private data structures for the different types
++	     * of data pertaining to the model.
++	     * @note The order of definitions is important for speed.
++	     * @{
++	     */   
++	    Parameters_ P_;
++	    State_      S_;
++	    Variables_  V_;
++	    Buffers_    B_;
++	    /** @} */
++	    
++	    static RecordablesMap<synth_integrator> recordablesMap_;
++    };
++
++  inline
++      port synth_integrator::check_connection(Connection& c, port receptor_type)
++      {
++	  // printf ("\tCheckSynapse: %d\n", receptor_type);
++
++	  SpikeEvent e;
++	  e.set_sender(*this);
++	  c.check_event(e);
++	  return c.get_target()->connect_sender(e, receptor_type);
++      }
++
++  inline
++      port synth_integrator::connect_sender(SpikeEvent&, port receptor_type)
++      {
++	  /* 0: normal receptor; 1: NMDA receptor */
++	  //  printf ("\n\tSynapse: %d \n\n", receptor_type);
++
++	  //if (receptor_type >= 1)
++	  if (receptor_type != 0)
++	      throw UnknownReceptorType(receptor_type, get_name());
++	  return receptor_type;
++      }
++
++  inline
++      port synth_integrator::connect_sender(CurrentEvent&, port receptor_type)
++      {
++	  if (receptor_type != 0)
++	      throw UnknownReceptorType(receptor_type, get_name());
++	  return 0;
++      }
++
++  inline
++      port synth_integrator::connect_sender(DataLoggingRequest& dlr, port receptor_type)
++      {
++	  if (receptor_type != 0)
++	      throw UnknownReceptorType(receptor_type, get_name());
++	  //B_.potentials_.connect_logging_device(pr);
++	  //return 0;
++	  return B_.logger_.connect_logging_device(dlr, recordablesMap_);
++      }
++  inline
++      void synth_integrator::get_status(DictionaryDatum &d) const
++      {
++	  P_.get(d);
++	  S_.get(d, P_);
++	  Archiving_Node::get_status(d);
++	  (*d)[names::recordables] = recordablesMap_.get_list();
++      }
++
++  inline
++      void synth_integrator::set_status(const DictionaryDatum &d)
++      {
++	  Parameters_ ptmp = P_;  // temporary copy in case of errors
++	  ptmp.set(d);                       // throws if BadProperty
++	  State_      stmp = S_;  // temporary copy in case of errors
++	  stmp.set(d, ptmp);                 // throws if BadProperty
++
++	  // We now know that (ptmp, stmp) are consistent. We do not 
++	  // write them back to (P_, S_) before we are also sure that 
++	  // the properties to be set in the parent class are internally 
++	  // consistent.
++	  Archiving_Node::set_status(d);
++
++	  // if we get here, temporaries contain consistent set of properties
++	  P_ = ptmp;
++	  S_ = stmp;
++      }
++
++} // namespace
++
++#endif /* #ifndef SYNTH_INTEGRATOR*/
+-- 
+1.8.1.2
+

@@ -1,0 +1,11 @@
+--- models/Makefile.am	2012-12-22 05:23:25.000000000 +0900
++++ models/Makefile.am	2013-01-28 21:56:19.103994239 +0900
+@@ -29,6 +29,8 @@
+ 		iaf_cond_exp_sfa_rr.h iaf_cond_exp_sfa_rr.cpp\
+ 		iaf_cond_alpha_mc.cpp iaf_cond_alpha_mc.h\
+ 		aeif_cond_alpha.h aeif_cond_alpha.cpp\
++		aeif_cond_nmda_alpha.h aeif_cond_nmda_alpha.cpp\
++		synth_integrator.h synth_integrator.cpp \
+ 		aeif_cond_exp.h aeif_cond_exp.cpp\
+ 		hh_psc_alpha.h hh_psc_alpha.cpp\
+ 		hh_cond_exp_traub.cpp hh_cond_exp_traub.h\

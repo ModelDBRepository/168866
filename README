@@ -1,0 +1,22 @@
+This is an upper-level README for the model associated with the paper:
+
+Moren J, Shibata T, Doya K (2013) The mechanism of saccade motor
+pattern generation investigated by a large-scale spiking neuron model
+of the superior colliculus. PLoS One 8:e57134
+
+A spatial model of the intermediate superior colliculus. It reproduces
+the collicular saccade-generating output profile from NMDA
+receptor-driven burst neurons, shaped by integrative inhibitory
+feedback from spreading buildup neuron activity. The model is
+consistent with the view that collicular activity directly shapes the
+temporal profile of saccadic eye movements.
+
+We use the Adaptive exponential integrate and fire neuron model,
+augmented with an NMDA-like membrane potential-dependent receptor. In
+addition, we use a synthetic spike integrator model as a stand-in for
+a spike-integrator circuit in the reticular formation.
+
+NOTE: We use a couple of custom neuron models, so the supplied model
+file includes an entire version of NEST. I also include a patch that
+applies to a clean version of the simulator (see the doc/readme for
+installation and usage).

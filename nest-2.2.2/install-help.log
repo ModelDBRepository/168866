@@ -1,0 +1,707 @@
+
+Jul 28 10:41:44 SLIStartup [Info]: 
+    Using SLIDATADIR=/data/hp120306/k00825/nest.install/share/nest
+
+Jul 28 10:41:44 SLIStartup [Info]: 
+    Using SLIDOCDIR=/data/hp120306/k00825/nest.install/share/doc/nest
+SLI v2.2.2 (C) 2004 The NEST Initiative
+Generating on-line help pages for NEST ...
+
+Jul 28 10:41:45 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/libnestutil
+
+Jul 28 10:41:45 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/sli
+
+Jul 28 10:41:48 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/librandom
+
+Jul 28 10:41:48 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/lib
+
+Jul 28 10:41:48 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/lib/sli
+
+Jul 28 10:41:50 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/lib/sli/nest-init.sli
+
+Jul 28 10:41:50 makehelp [Error]: KeyName:ExpectedError
+
+Jul 28 10:41:52 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/nestkernel
+
+Jul 28 10:41:53 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/models
+
+Jul 28 10:41:54 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/models/sli
+
+Jul 28 10:41:54 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/precise
+
+Jul 28 10:41:54 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/topology
+
+Jul 28 10:41:55 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/topology/sli
+
+Jul 28 10:41:55 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/conngen
+
+Jul 28 10:41:55 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/conngen/sli
+
+Jul 28 10:41:55 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/models
+
+Jul 28 10:41:56 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/models/sli
+
+Jul 28 10:41:56 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/precise
+
+Jul 28 10:41:56 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/topology
+
+Jul 28 10:41:56 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/topology/sli
+
+Jul 28 10:41:57 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/conngen
+
+Jul 28 10:41:57 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/conngen/sli
+
+Jul 28 10:41:57 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/nest
+
+Jul 28 10:42:01 SLI [Warning]: 
+    Dead Link to binary_neuron in ginzburg_neuron
+
+Jul 28 10:42:01 SLI [Warning]: 
+    Dead Link to testsuite::test_iaf in iaf_neuron
+
+Jul 28 10:42:02 SLI [Warning]: 
+    Dead Link to binary_neuron in mcculloch_pitts_neuron
+
+Jul 28 10:42:03 SLI [Warning]: 
+    Dead Link to gamma_generator in sinusoidal_gamma_generator
+
+Jul 28 10:42:03 SLI [Warning]: 
+    Dead Link to testsuite::test_sli_neuron in sli_neuron
+
+Jul 28 10:42:03 SLI [Warning]: 
+    Dead Link to testsuite::test_spike_generator in spike_generator
+
+Jul 28 10:42:05 SLI [Warning]: 
+    Dead Link to testsuite::test_lambertw in LambertW
+
+Jul 28 10:42:05 SLI [Warning]: 
+    Dead Link to testsuite::test_lambertw in LambertW0
+
+Jul 28 10:42:05 SLI [Warning]: 
+    Dead Link to testsuite::test_lambertw in LambertWm1
+
+Jul 28 10:42:09 SLI [Warning]: 
+    Dead Link to testsuite::test_iaf in unittest::ToUnitTestPrecision
+Done.
+
+Jul 28 10:42:10 SLIStartup [Info]: 
+    Using SLIDATADIR=/data/hp120306/k00825/nest.install/share/nest
+
+Jul 28 10:42:10 SLIStartup [Info]: 
+    Using SLIDOCDIR=/data/hp120306/k00825/nest.install/share/doc/nest
+SLI v2.2.2 (C) 2004 The NEST Initiative
+Generating on-line help pages for NEST ...
+
+Jul 28 10:42:10 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/selftests
+
+Jul 28 10:42:13 SLI [Warning]: 
+    Dead Link to binary_neuron in ginzburg_neuron
+
+Jul 28 10:42:13 SLI [Warning]: 
+    Dead Link to testsuite::test_iaf in iaf_neuron
+
+Jul 28 10:42:13 SLI [Warning]: 
+    Dead Link to binary_neuron in mcculloch_pitts_neuron
+
+Jul 28 10:42:14 SLI [Warning]: 
+    Dead Link to gamma_generator in sinusoidal_gamma_generator
+
+Jul 28 10:42:14 SLI [Warning]: 
+    Dead Link to testsuite::test_sli_neuron in sli_neuron
+
+Jul 28 10:42:14 SLI [Warning]: 
+    Dead Link to testsuite::test_spike_generator in spike_generator
+
+Jul 28 10:42:15 SLI [Warning]: 
+    Dead Link to testsuite::test_lambertw in LambertW
+
+Jul 28 10:42:15 SLI [Warning]: 
+    Dead Link to testsuite::test_lambertw in LambertW0
+
+Jul 28 10:42:15 SLI [Warning]: 
+    Dead Link to testsuite::test_lambertw in LambertWm1
+
+Jul 28 10:42:17 SLI [Warning]: 
+    Dead Link to testsuite::test_iaf in unittest::ToUnitTestPrecision
+Done.
+
+Jul 28 10:42:19 SLIStartup [Info]: 
+    Using SLIDATADIR=/data/hp120306/k00825/nest.install/share/nest
+
+Jul 28 10:42:19 SLIStartup [Info]: 
+    Using SLIDOCDIR=/data/hp120306/k00825/nest.install/share/doc/nest
+SLI v2.2.2 (C) 2004 The NEST Initiative
+Generating on-line help pages for NEST ...
+
+Jul 28 10:42:19 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests
+
+Jul 28 10:42:19 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests/test_convergent_connect.sli
+
+Jul 28 10:42:19 ws [Error]: BadIO
+
+Jul 28 10:42:19 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests/test_divergent_connect.sli
+
+Jul 28 10:42:19 ws [Error]: BadIO
+
+Jul 28 10:42:19 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests/test_iaf_min_delay_create.sli
+
+Jul 28 10:42:19 ws [Error]: BadIO
+
+Jul 28 10:42:19 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests/test_iaf_min_delay_set.sli
+
+Jul 28 10:42:19 ws [Error]: BadIO
+
+Jul 28 10:42:19 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests/test_multimeter.sli
+
+Jul 28 10:42:19 ws [Error]: BadIO
+
+Jul 28 10:42:20 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests/test_multiple_multimeter.sli
+
+Jul 28 10:42:20 ws [Error]: BadIO
+
+Jul 28 10:42:20 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests/test_node_distribution.sli
+
+Jul 28 10:42:20 ws [Error]: BadIO
+
+Jul 28 10:42:20 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests/test_poisson_generator_campbell_alpha.sli
+
+Jul 28 10:42:20 ws [Error]: BadIO
+
+Jul 28 10:42:20 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests/test_psp_amplitude_consistency.sli
+
+Jul 28 10:42:20 ws [Error]: BadIO
+
+Jul 28 10:42:20 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests/test_random_divergent_connect.sli
+
+Jul 28 10:42:20 ws [Error]: BadIO
+
+Jul 28 10:42:20 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests/test_sinusoidal_gamma_generator.sli
+
+Jul 28 10:42:20 ws [Error]: BadIO
+
+Jul 28 10:42:20 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests/test_sinusoidal_poisson_generator.sli
+
+Jul 28 10:42:20 ws [Error]: BadIO
+
+Jul 28 10:42:20 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/unittests/test_spike_poisson_ps_base2.sli
+
+Jul 28 10:42:20 makehelp [Error]: MissingObligatoryMinusAfterCommandNameError
+
+Jul 28 10:42:22 SLI [Warning]: 
+    Dead Link to binary_neuron in ginzburg_neuron
+
+Jul 28 10:42:23 SLI [Warning]: 
+    Dead Link to binary_neuron in mcculloch_pitts_neuron
+
+Jul 28 10:42:23 SLI [Warning]: 
+    Dead Link to gamma_generator in sinusoidal_gamma_generator
+
+Jul 28 10:42:27 SLI [Warning]: 
+    Dead Link to test_iaf_psc_alpha_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:42:27 SLI [Warning]: 
+    Dead Link to iaf_psc_exp_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:42:27 SLI [Warning]: 
+    Dead Link to test_sinusoidal_gamma_generator_mpi in 
+    testsuite::test_sinusoidal_gamma_generator_nostats
+
+Jul 28 10:42:27 SLI [Warning]: 
+    Dead Link to test_sinusoidal_poisson_generator_mpi in 
+    testsuite::test_sinusoidal_poisson_generator_nostats
+
+Jul 28 10:42:28 SLI [Warning]: 
+    Dead Link to testsuite::ticket-452 in testsuite::test_steppedsim
+Done.
+
+Jul 28 10:42:29 SLIStartup [Info]: 
+    Using SLIDATADIR=/data/hp120306/k00825/nest.install/share/nest
+
+Jul 28 10:42:29 SLIStartup [Info]: 
+    Using SLIDOCDIR=/data/hp120306/k00825/nest.install/share/doc/nest
+SLI v2.2.2 (C) 2004 The NEST Initiative
+Generating on-line help pages for NEST ...
+
+Jul 28 10:42:29 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests
+
+Jul 28 10:42:29 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-235.sli
+
+Jul 28 10:42:29 ws [Error]: BadIO
+
+Jul 28 10:42:29 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-293.sli
+
+Jul 28 10:42:29 ws [Error]: BadIO
+
+Jul 28 10:42:29 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-333.sli
+
+Jul 28 10:42:29 ws [Error]: BadIO
+
+Jul 28 10:42:29 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-349.sli
+
+Jul 28 10:42:29 ws [Error]: BadIO
+
+Jul 28 10:42:29 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-382.sli
+
+Jul 28 10:42:29 ws [Error]: BadIO
+
+Jul 28 10:42:29 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-399.sli
+
+Jul 28 10:42:29 ws [Error]: BadIO
+
+Jul 28 10:42:29 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-414.sli
+
+Jul 28 10:42:29 ws [Error]: BadIO
+
+Jul 28 10:42:29 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-421.sli
+
+Jul 28 10:42:29 ws [Error]: BadIO
+
+Jul 28 10:42:29 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-451.sli
+
+Jul 28 10:42:29 ws [Error]: BadIO
+
+Jul 28 10:42:29 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-464.sli
+
+Jul 28 10:42:29 ws [Error]: BadIO
+
+Jul 28 10:42:29 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-466.sli
+
+Jul 28 10:42:29 ws [Error]: BadIO
+
+Jul 28 10:42:29 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-475.sli
+
+Jul 28 10:42:30 ws [Error]: BadIO
+
+Jul 28 10:42:30 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-478.sli
+
+Jul 28 10:42:30 makehelp [Error]: MissingObligatoryMinusAfterCommandNameError
+
+Jul 28 10:42:30 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-519.sli
+
+Jul 28 10:42:30 ws [Error]: BadIO
+
+Jul 28 10:42:30 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-520.sli
+
+Jul 28 10:42:30 ws [Error]: BadIO
+
+Jul 28 10:42:30 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/regressiontests/ticket-537.sli
+
+Jul 28 10:42:30 ws [Error]: BadIO
+
+Jul 28 10:42:32 SLI [Warning]: 
+    Dead Link to binary_neuron in ginzburg_neuron
+
+Jul 28 10:42:33 SLI [Warning]: 
+    Dead Link to binary_neuron in mcculloch_pitts_neuron
+
+Jul 28 10:42:33 SLI [Warning]: 
+    Dead Link to gamma_generator in sinusoidal_gamma_generator
+
+Jul 28 10:42:36 SLI [Warning]: 
+    Dead Link to test_iaf_psc_alpha_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:42:36 SLI [Warning]: 
+    Dead Link to iaf_psc_exp_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:42:37 SLI [Warning]: 
+    Dead Link to test_sinusoidal_gamma_generator_mpi in 
+    testsuite::test_sinusoidal_gamma_generator_nostats
+
+Jul 28 10:42:37 SLI [Warning]: 
+    Dead Link to test_sinusoidal_poisson_generator_mpi in 
+    testsuite::test_sinusoidal_poisson_generator_nostats
+Done.
+
+Jul 28 10:42:38 SLIStartup [Info]: 
+    Using SLIDATADIR=/data/hp120306/k00825/nest.install/share/nest
+
+Jul 28 10:42:38 SLIStartup [Info]: 
+    Using SLIDOCDIR=/data/hp120306/k00825/nest.install/share/doc/nest
+SLI v2.2.2 (C) 2004 The NEST Initiative
+Generating on-line help pages for NEST ...
+
+Jul 28 10:42:39 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/manualtests
+
+Jul 28 10:42:39 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/manualtests/test_compare_delta.sli
+
+Jul 28 10:42:39 ws [Error]: BadIO
+
+Jul 28 10:42:39 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/manualtests/test_hh_cond_exp_traub.sli
+
+Jul 28 10:42:39 ws [Error]: BadIO
+
+Jul 28 10:42:39 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/manualtests/test_spike_poisson_ps_base2_f.sli
+
+Jul 28 10:42:39 makehelp [Error]: MissingObligatoryMinusAfterCommandNameError
+
+Jul 28 10:42:39 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/manualtests/test_spike_poisson_ps_base2_p.sli
+
+Jul 28 10:42:39 makehelp [Error]: MissingObligatoryMinusAfterCommandNameError
+
+Jul 28 10:42:41 SLI [Warning]: 
+    Dead Link to binary_neuron in ginzburg_neuron
+
+Jul 28 10:42:42 SLI [Warning]: 
+    Dead Link to binary_neuron in mcculloch_pitts_neuron
+
+Jul 28 10:42:42 SLI [Warning]: 
+    Dead Link to gamma_generator in sinusoidal_gamma_generator
+
+Jul 28 10:42:46 SLI [Warning]: 
+    Dead Link to test_iaf_psc_alpha_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:42:46 SLI [Warning]: 
+    Dead Link to iaf_psc_exp_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:42:46 SLI [Warning]: 
+    Dead Link to test_sinusoidal_gamma_generator_mpi in 
+    testsuite::test_sinusoidal_gamma_generator_nostats
+
+Jul 28 10:42:46 SLI [Warning]: 
+    Dead Link to test_sinusoidal_poisson_generator_mpi in 
+    testsuite::test_sinusoidal_poisson_generator_nostats
+Done.
+
+Jul 28 10:42:47 SLIStartup [Info]: 
+    Using SLIDATADIR=/data/hp120306/k00825/nest.install/share/nest
+
+Jul 28 10:42:47 SLIStartup [Info]: 
+    Using SLIDOCDIR=/data/hp120306/k00825/nest.install/share/doc/nest
+SLI v2.2.2 (C) 2004 The NEST Initiative
+Generating on-line help pages for NEST ...
+
+Jul 28 10:42:48 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/mpitests
+
+Jul 28 10:42:51 SLI [Warning]: 
+    Dead Link to binary_neuron in ginzburg_neuron
+
+Jul 28 10:42:51 SLI [Warning]: 
+    Dead Link to binary_neuron in mcculloch_pitts_neuron
+
+Jul 28 10:42:52 SLI [Warning]: 
+    Dead Link to gamma_generator in sinusoidal_gamma_generator
+
+Jul 28 10:42:55 SLI [Warning]: 
+    Dead Link to test_iaf_psc_alpha_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:42:55 SLI [Warning]: 
+    Dead Link to iaf_psc_exp_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:42:55 SLI [Warning]: 
+    Dead Link to test_sinusoidal_gamma_generator_mpi in 
+    testsuite::test_sinusoidal_gamma_generator_nostats
+
+Jul 28 10:42:55 SLI [Warning]: 
+    Dead Link to test_sinusoidal_poisson_generator_mpi in 
+    testsuite::test_sinusoidal_poisson_generator_nostats
+Done.
+
+Jul 28 10:42:57 SLIStartup [Info]: 
+    Using SLIDATADIR=/data/hp120306/k00825/nest.install/share/nest
+
+Jul 28 10:42:57 SLIStartup [Info]: 
+    Using SLIDOCDIR=/data/hp120306/k00825/nest.install/share/doc/nest
+SLI v2.2.2 (C) 2004 The NEST Initiative
+Generating on-line help pages for NEST ...
+
+Jul 28 10:42:57 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/mpi_selftests
+
+Jul 28 10:43:00 SLI [Warning]: 
+    Dead Link to binary_neuron in ginzburg_neuron
+
+Jul 28 10:43:01 SLI [Warning]: 
+    Dead Link to binary_neuron in mcculloch_pitts_neuron
+
+Jul 28 10:43:01 SLI [Warning]: 
+    Dead Link to gamma_generator in sinusoidal_gamma_generator
+
+Jul 28 10:43:04 SLI [Warning]: 
+    Dead Link to test_iaf_psc_alpha_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:43:04 SLI [Warning]: 
+    Dead Link to iaf_psc_exp_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:43:05 SLI [Warning]: 
+    Dead Link to test_sinusoidal_gamma_generator_mpi in 
+    testsuite::test_sinusoidal_gamma_generator_nostats
+
+Jul 28 10:43:05 SLI [Warning]: 
+    Dead Link to test_sinusoidal_poisson_generator_mpi in 
+    testsuite::test_sinusoidal_poisson_generator_nostats
+Done.
+
+Jul 28 10:43:06 SLIStartup [Info]: 
+    Using SLIDATADIR=/data/hp120306/k00825/nest.install/share/nest
+
+Jul 28 10:43:06 SLIStartup [Info]: 
+    Using SLIDOCDIR=/data/hp120306/k00825/nest.install/share/doc/nest
+SLI v2.2.2 (C) 2004 The NEST Initiative
+Generating on-line help pages for NEST ...
+
+Jul 28 10:43:06 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/mpi_selftests/pass
+
+Jul 28 10:43:07 :makeallhelp [Error]: 
+    Documentation error in file 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/mpi_selftests/pass/test_parse_message_line.sli
+
+Jul 28 10:43:07 makehelp [Error]: MissingObligatoryMinusAfterCommandNameError
+
+Jul 28 10:43:09 SLI [Warning]: 
+    Dead Link to binary_neuron in ginzburg_neuron
+
+Jul 28 10:43:10 SLI [Warning]: 
+    Dead Link to binary_neuron in mcculloch_pitts_neuron
+
+Jul 28 10:43:10 SLI [Warning]: 
+    Dead Link to gamma_generator in sinusoidal_gamma_generator
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to testsuite::crash_distributed_assert_or_die in 
+    testsuite::test_distributed_assert_or_die
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to testsuite::fail_distributed_assert_or_die in 
+    testsuite::test_distributed_assert_or_die
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to testsuite::crash_distributed_collect_assert_or_die in 
+    testsuite::test_distributed_collect_assert_or_die
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to testsuite::fail_distributed_collect_assert_or_die in 
+    testsuite::test_distributed_collect_assert_or_die
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to testsuite::crash_distributed_invariant_assert_or_die in 
+    testsuite::test_distributed_invariant_assert_or_die
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to testsuite::fail_distributed_invariant_assert_or_die in 
+    testsuite::test_distributed_invariant_assert_or_die
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to testsuite::crash_distributed_pass_or_die in 
+    testsuite::test_distributed_pass_or_die
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to testsuite::fail_distributed_pass_or_die in 
+    testsuite::test_distributed_pass_or_die
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to 
+    testsuite::crash_distributed_process_invariant_collect_assert_or_die in 
+    testsuite::test_distributed_process_invariant_collect_assert_or_die
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to 
+    testsuite::fail_distributed_process_invariant_collect_assert_or_die in 
+    testsuite::test_distributed_process_invariant_collect_assert_or_die
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to 
+    testsuite::crash_distributed_process_invariant_events_assert_or_die in 
+    testsuite::test_distributed_process_invariant_events_assert_or_die
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to 
+    testsuite::fail_distributed_process_invariant_events_assert_or_die in 
+    testsuite::test_distributed_process_invariant_events_assert_or_die
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to 
+    testsuite::crash_distributed_rank_invariant_collect_assert_or_die in 
+    testsuite::test_distributed_rank_invariant_collect_assert_or_die
+
+Jul 28 10:43:13 SLI [Warning]: 
+    Dead Link to 
+    testsuite::fail_distributed_rank_invariant_collect_assert_or_die in 
+    testsuite::test_distributed_rank_invariant_collect_assert_or_die
+
+Jul 28 10:43:14 SLI [Warning]: 
+    Dead Link to test_iaf_psc_alpha_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:43:14 SLI [Warning]: 
+    Dead Link to iaf_psc_exp_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:43:14 SLI [Warning]: 
+    Dead Link to test_sinusoidal_gamma_generator_mpi in 
+    testsuite::test_sinusoidal_gamma_generator_nostats
+
+Jul 28 10:43:14 SLI [Warning]: 
+    Dead Link to test_sinusoidal_poisson_generator_mpi in 
+    testsuite::test_sinusoidal_poisson_generator_nostats
+Done.
+
+Jul 28 10:43:16 SLIStartup [Info]: 
+    Using SLIDATADIR=/data/hp120306/k00825/nest.install/share/nest
+
+Jul 28 10:43:16 SLIStartup [Info]: 
+    Using SLIDOCDIR=/data/hp120306/k00825/nest.install/share/doc/nest
+SLI v2.2.2 (C) 2004 The NEST Initiative
+Generating on-line help pages for NEST ...
+
+Jul 28 10:43:16 :makeallhelp [Info]: 
+    Processing directory 
+    /.global/volume2/home/hp120306/k00825/Build/PyNest-MUSIC/nest-2.2.2/testsuite/mpi_selftests/fail
+
+Jul 28 10:43:19 SLI [Warning]: 
+    Dead Link to binary_neuron in ginzburg_neuron
+
+Jul 28 10:43:19 SLI [Warning]: 
+    Dead Link to binary_neuron in mcculloch_pitts_neuron
+
+Jul 28 10:43:20 SLI [Warning]: 
+    Dead Link to gamma_generator in sinusoidal_gamma_generator
+
+Jul 28 10:43:23 SLI [Warning]: 
+    Dead Link to test_iaf_psc_alpha_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:43:23 SLI [Warning]: 
+    Dead Link to iaf_psc_exp_multisynapse in 
+    testsuite::test_iaf_psc_exp_multisynapse
+
+Jul 28 10:43:24 SLI [Warning]: 
+    Dead Link to test_sinusoidal_gamma_generator_mpi in 
+    testsuite::test_sinusoidal_gamma_generator_nostats
+
+Jul 28 10:43:24 SLI [Warning]: 
+    Dead Link to test_sinusoidal_poisson_generator_mpi in 
+    testsuite::test_sinusoidal_poisson_generator_nostats
+Done.

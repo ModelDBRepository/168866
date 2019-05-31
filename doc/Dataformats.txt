@@ -1,0 +1,139 @@
+This is a rough description of the data formats in the project
+
+Simulation file
+
+* A simulation result description file contains all parameters for one simulation run. 
+
+* The file ends in either ".sim" or ".zim"
+
+    - .sim files are written by the simulation. 
+        It is in Json format.
+            
+    - .zim files are converted from .sim files by the "compact.py" utility.
+        It is also in Json format but compressed with bzip2
+            
+    - Both variants can be read using the 'load_simfile' helper function in SGIdataclass.py
+                
+* The format is:
+
+Dict
+    'simdir' (string)           Simulation directory. Not useful, nor used. May be removed.
+    'datadir' (string)          Spike data directory relative to this simulation file
+    'simtime' (int)             Simulation length in milliseconds
+
+    'params' (Dict)             Simulation parameters. Perhaps 'simtime' should be here too
+        'rand' (int)            Random seed value used. '' if multiple runs are collated.
+        'inhib' (float)         inhibitory feedback->burst strength parameter
+        'build' (float)         build->burst connection strength parameter
+        'nmda' (float)          nmda connection strength parameter
+        'runs' (int)            Number of runs to average. Always 1 until you use "collate.py" to
+                                assemble several runs.
+                            
+    'surfaces' (List)           surface-specific parameters. Could perhaps better been a
+                                dictionary I suppose.
+        surface (Dict)          One surface.
+            'name' (string)     surface name as set in the simulation, like 'burst_neuron'
+            'filebasename' (string) same as name. redundant, unused.
+            'GID' (int          May be the GID of the topological surface. Not sure. Unused.
+            'rows' (int)        number of rows and cols of neurons
+            'cols' (int)        
+            'xcenter' (float)   Position (in mm) of the center neuron. We place (0,0) at left
+            'ycenter' (float)   center of the surfaces.
+            'pitch' (float)     Distance in mm between adjacent neurons
+            
+            'coords' (Dict)     hash of neuron ID to column, row mappings
+                neuron (string) neuron ID as specified by NEST
+                    [col, row]  tuple with the column and row of the neuron.
+
+    'blobs' (List)              blob-specific parameters. should be a dictionary, really.
+                                Blobs are groups of neurons not in a topological surface. 
+        blob (Dict)             One blob.
+            'name' (string)     blob name as set in the simulation, like 'integrator'
+            'filebasename' (string) same as name. redundant, unused.
+            'units' (int)       Number of neurons in the blob.
+            
+
+Spike recording files
+
+* Spike recording files contain the actual spike events.
+
+* We have three separate formats. Multiple files ending in ".spikes"; one file ending in ".spk"; or one file 
+  ending in ".zpikes". All three come in two variants depending on whether they contain 
+  topological data (surfaces) or not (blobs).
+
+
+  .spikes files
+
+    - written by the Nest simulator.     
+    - one file per surface (or blob) and process, so multiple files per surface
+   
+    - the filenames have the format 
+
+        '[simname]_[surface]_[nr]_[process].spikes'
+      
+      where [simname] is the simulation name; [surface] is the surface or blob
+      name; [nr] is a NEST-dependent ID; [process] is the process number for
+      that particular output file. 
+
+
+    - Can be read using the 'load_spikefile' or 'load_blobfile' helper
+      functions in SGIdataclass.py. 
+
+
+  .spk files
+    
+    - generated from ".spikes" files by the "assemble.py" utility.
+    - one file per surface or blob
+    
+    - the filename is 
+      
+        '[surface].[simname].spk'
+
+      with [surface] and [simname] as above.
+
+
+  .zpikes files 
+            
+    - converted from .spikes files by the "compact.py" utility.    
+    - one file per surface or blob
+    - It is in python Dump format, compressed with bzip2
+       
+    - The files are stored in a subdirectory [simname]/ with name
+
+        '[surface].zpikes'
+      
+      with [surface] and [simname] as above.
+
+    - Can be read using the 'load_spikefile' or 'load_blobfile' helper
+      functions in SGIdataclass.py. 
+            
+    
+* Surface formats:
+   
+   .spikes 
+        'GID ms' (int float)    one line per event, with neuron GID and time in
+                                milliseconds.
+   .spk 
+        'GID ms' (int float)    one line per event, with neuron GID and time in
+                                milliseconds. Sorted by event time.
+                                
+    .zpikes (Dict)
+         neuron (int)           Neuron ID as specified by nest
+            spikes (list)       
+                spikes (float)  list of floats specifying the spike time in 
+                                milliseconds
+                                
+                                
+* Blob formats:
+   
+   .spikes 
+        'ms' (float)            one line per event, with spike time in milliseconds.
+   
+   .spk 
+        'ms' (float)            one line per event, with spike time in milliseconds. Sorted.
+                                
+    .zpikes (list)
+        spikes (float)          list of floats specifying the spike time in milliseconds
+                                
+                                
+
